@@ -1,0 +1,64 @@
+.medicine * {
+  text-align: center;
+  align-items: center;
+  vertical-align: middle;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.medicine {
+  padding: 0.2em;
+  background: #e0f7fb;
+  margin-bottom: 0.2em;
+}
+
+.medicine-list {
+  height: 230px;
+  overflow-y: scroll;
+  margin-top: 1em;
+  border-bottom: 1px solid #d5c9c9;
+
+  margin-bottom: 0.2em;
+}
+///Modal Dialog Width
+
+.modal-dialog {
+  max-width: 70%;
+}
+
+@media (max-width: 600px) {
+  .modal-dialog {
+    max-width: 100%;
+  }
+}
+
+//Access Box---
+.access_box {
+  min-height: 10vh;
+  // color: #0a58ca;
+}
+
+.bg-light-blue {
+  background-color: #e0f7fb !important;
+}
+
+.access_box .MuiGrid-item {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.flex-end {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.action-btns {
+  display: flex;
+  justify-content: space-between;
+}
+
+.primary {
+  color: "#0A58CA";
+}
