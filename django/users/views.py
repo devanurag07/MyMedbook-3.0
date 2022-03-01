@@ -1,5 +1,5 @@
 import datetime
-from os import stat, times
+from os import remove, stat, times
 from pstats import Stats
 from re import T
 from shutil import ReadError
@@ -21,6 +21,11 @@ from rest_framework_jwt.settings import api_settings
 from sqlalchemy import alias
 from common.models import OtpRequests
 from common.fastsms import send_message
+from users.serializers import UserSerializerReadOnly
+from users.models import DoctorTag
+from users.serializers import TagSerializer
+from queues.models import BillingInvoice
+from users.serializers import BillingInvoiceSerializer
 # from django.users.permissions import IsDoctor
 from users.permissions import IsDoctor
 from users.models import AppointmentModel, DateTimeSlot, TimeSlot, UserProfile
@@ -567,14 +572,57 @@ class UserMViewSet(viewsets.ModelViewSet):
 
         return Response(doctor.first_name + ' ' + doctor.last_name)
 
+       # Tags Mechanism
+    @action(methods=["get"], detail=False, url_path="get-tags")
+    def get_tags(self, request, pk=None, *args, **kwargs):
+
+        def getTags():
+
+            tags = DoctorTag.objects.all()
+            tags_data = TagSerializer(tags, many=True).data
+
+            return {"tags": tags_data}
+
+        data = getTags()
+
+        return Response(data, status=status.HTTP_200_OK)
+
+       # Tags Mechanism
+
+    @action(methods=["post"], detail=False, url_path="filter-doctors")
+    def filterDoctors(self, request, pk=None, *args, **kwargs):
+
+        data = request.data
+        tags = data.get("tags", [])
+        tags_list = []
+
+        for tag in tags:
+            try:
+                tag_id = tag.get("id")
+                tag_obj = DoctorTag.objects.get(id=tag_id)
+                tags_list.append(tag_obj)
+            except Exception as e:
+                print(e)
+
+        doctors = set()
+        for tag_obj in tags_list:
+            tag_doctors = tag_obj.doctors.all()
+            tag_doctors = [
+                doctor_profile.user for doctor_profile in tag_doctors]
+
+            doctors = set(doctors) | set(tag_doctors)
+
+        resp_data = UserSerializerReadOnly(list(doctors), many=True).data
+
+        return Response({"data": resp_data}, status=status.HTTP_200_OK)
+
 
 class DoctorsMViewSet(viewsets.ModelViewSet):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsDoctor]
     serializer_class = UsersSerializer
 
     def get_queryset(self):
-        customer_role = Roles.objects.filter(alias=CUSTOMERS_USER_TYPE)
-
+        customer_role = Roles.objects.filter(alias=CUSTOMERS_USER_TYPE)[0]
         queryset = QMUser.objects.filter(profile__role_id=customer_role.id)
         return queryset
 
@@ -640,14 +688,13 @@ class DoctorsMViewSet(viewsets.ModelViewSet):
     def create_invoice(self, request, *args, **kwargs):
         data = request.data
         formatDate = "%Y-%m-%d"
-        import pdb
-
         appointmentDateStr = data.get('appointmentDate', None)
 
         try:
             date = appointmentDateStr.split("T")[0]
             appointmentDate = datetime.datetime.strptime(
                 date, formatDate)
+
         except Exception as e:
             appointmentDate = None
 
@@ -659,12 +706,93 @@ class DoctorsMViewSet(viewsets.ModelViewSet):
 
         customer = QMUser.objects.get(pk=customer_id)
         doctor = request.user
+        # To Select
         latest_presc = Prescription.objects.filter(
             customer=customer, created_by=doctor).last()
+
         if(latest_presc == None):
             return Response({"msg": "Prescription Not Created Yet...", "status": "error"}, status=status.HTTP_404_NOT_FOUND)
 
-        ...
+        already_exists = BillingInvoice.objects.filter(
+            prescription=latest_presc).exists()
+
+        if(already_exists):
+
+            # Development Line
+            BillingInvoice.objects.filter(
+                prescription=latest_presc).delete()
+
+            # return Response({"msg": "Already Created", "status": "error"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if True:
+            billing_invoice = BillingInvoice(prescription=latest_presc,
+                                             consulation_charges=consultationCharges,
+                                             appointment_date=appointmentDate,
+                                             customer=customer,
+                                             created_by=doctor)
+
+            billing_invoice.save()
+
+            invoice_data = BillingInvoiceSerializer(
+                billing_invoice, many=False).data
+
+            return Response({"msg": "Invoice Created", "data": invoice_data}, status=status.HTTP_201_CREATED)
+
+    # Tags Mechanism
+    @action(methods=["post", "get"], detail=False, url_path="doctor_tags")
+    def doctor_tags(self, request, pk=None, *args, **kwargs):
+
+        def getTags():
+            tags = request.user.profile.tags.all()
+            tags_data = TagSerializer(tags, many=True).data
+
+            remaining_tags = [
+
+            ]
+            for doctor_tag in DoctorTag.objects.all():
+                if(doctor_tag in tags):
+                    continue
+
+                tag_data = {
+                    'id': doctor_tag.id,
+                    'tag': doctor_tag.tag
+                }
+
+                remaining_tags.append(tag_data)
+
+            return {"tags": tags_data, "remaining_tags": remaining_tags}
+
+        if(request.method == 'GET'):
+            data = getTags()
+            return Response({"msg": "Got it", "data": data}, status=status.HTTP_200_OK)
+
+        if(request.method == 'POST'):
+            tags = request.user.profile.tags.all()
+            data = request.data
+            tag_id = data.get("tag_id", None)
+            remove = data.get("remove", False)
+
+            if(tag_id == None):
+                return Response({'msg': "No ID Provided"}, status=status.HTTP_400_BAD_REQUEST)
+
+            tag = get_object_or_404(DoctorTag, id=tag_id)
+
+            if(remove):
+                if(not (tag in tags)):
+                    return Response({'msg': "Doesn't Exists Provided"}, status=status.HTTP_400_BAD_REQUEST)
+
+                request.user.profile.tags.remove(tag)
+            else:
+                if(tag in tags):
+                    return Response({'msg': "Already Exists Provided"}, status=status.HTTP_400_BAD_REQUEST)
+
+                request.user.profile.tags.add(tag)
+
+            data = getTags()
+
+            return Response({"data": data}, status=status.HTTP_200_OK)
+
+        return Response({''})
 
     @action(methods=["post"], detail=True, url_path="verify-otp")
     def verify_otp(self, request, pk=None, *args, **kwargs):
@@ -790,9 +918,20 @@ class AppointmentViewset(viewsets.ModelViewSet):
                         continue
                     uniqueDates.append(date)
 
+                """
+                    If Date is not provided it will return just unique dates...
+                    Those dates are the key to timeslots
+                """
+
                 return Response({"dates": uniqueDates}, status=status.HTTP_200_OK)
 
             else:
+
+                """Return Timeslot by Date[Specific] 
+                   Date is the key ....
+                    date--input
+                    timeslots--output
+                """
                 timeslots = DateTimeSlot.objects.filter(
                     date=date, doctor=request.user).order_by("start_time")
                 datetimeslots = DateTimeSlotSerializer(
@@ -827,12 +966,16 @@ class AppointmentViewset(viewsets.ModelViewSet):
             toDateObj = datetime.datetime.strptime(toDate, formatDate)
 
             deltaDays = (toDateObj-fromDateObj).days
-            if(fromDateObj > toDateObj):
+            if(fromDateObj > toDateObj or datetime.datetime.today() > fromDateObj):
                 return Response({'msg': 'Invalid Timespan'}, status=status.HTTP_400_BAD_REQUEST)
 
             else:
                 if(deltaDays > 30):
                     return Response({'msg': 'Can"t select more than 30 days '}, status=status.HTTP_400_BAD_REQUEST)
+
+                deltaDays = (toDateObj - datetime.datetime.today()).days
+                if(deltaDays > 30):
+                    return Response({'msg': 'Invalid Timespan'}, status=status.HTTP_400_BAD_REQUEST)
 
             timespanDates = []
             for i in range(0, abs(deltaDays)+1):

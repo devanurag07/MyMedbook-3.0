@@ -8,6 +8,8 @@ import AdapterDateFns from "@mui/lab/AdapterDateFns";
 import LocalizationProvider from "@mui/lab/LocalizationProvider";
 import DatePicker from "@mui/lab/DatePicker";
 
+import { toast } from "react-toastify";
+
 const useStyles = makeStyles((theme) => ({
   root: {
     padding: "3em",
@@ -61,7 +63,15 @@ const Billing = () => {
         postCall(BASE_URL + "api/doctors_m/create-invoice/", {
           ...formData,
           customer: customer_id,
-        });
+        })
+          .then((resp) => {
+            console.log(resp.data);
+            let msg = resp.data.msg;
+            toast(msg);
+          })
+          .catch((error) => {
+            console.log(error.response);
+          });
       }
     }
   };

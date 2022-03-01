@@ -27,7 +27,7 @@ import HighchartsReact from "highcharts-react-official";
 import { AutoComplete } from "primereact/autocomplete";
 import axios from "axios";
 
-import Home from "./UserPanel/Home";
+import NewUserDashboard from "./UserPanel/NewUserDashboard";
 import { Grid, Paper } from "@mui/material";
 
 class Dashboard extends Component {
@@ -1050,7 +1050,8 @@ class Dashboard extends Component {
           //     />
           //   </div>
           // </div>
-          <Home />
+          // <Home />
+          <NewUserDashboard />
         )}
         <Modal isOpen={this.state.isModalOpen} size="lg" toggle={this.toggle}>
           <AvForm

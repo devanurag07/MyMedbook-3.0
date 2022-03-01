@@ -3,9 +3,10 @@ from django.contrib.auth.models import Group, Permission
 from django.db import models
 from django.db.models import Q, fields
 from rest_framework import serializers
+from users.models import DoctorTag
+from queues.models import BillingInvoice
 from users.models import AccessRequest, AppointmentModel, DateTimeSlot, TimeSlot
 from queues.serializers import PrescriptionSerializer
-
 from users.models import QMUser, UserProfile, Roles
 from generics.defaults import AppDefaults
 
@@ -287,4 +288,26 @@ class TimeSlotSerializer(serializers.ModelSerializer):
 class DateTimeSlotSerializer(serializers.ModelSerializer):
     class Meta:
         model = DateTimeSlot
+        fields = "__all__"
+
+
+class BillingInvoiceSerializer(serializers.ModelSerializer):
+    customer_data = serializers.SerializerMethodField()
+    customer_email = serializers.ReadOnlyField(source="customer.email")
+    customer_phone = serializers.ReadOnlyField(
+        source="customer.profile.mobile")
+
+    def get_customer_data(self, instance):
+        data = UserSerializerReadOnly(instance.customer, many=False).data
+        return data
+
+    class Meta:
+        model = BillingInvoice
+        fields = "__all__"
+
+
+# Tag Mechanisms
+class TagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DoctorTag
         fields = "__all__"

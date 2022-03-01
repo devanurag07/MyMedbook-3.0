@@ -28,6 +28,10 @@ USER_TYPE_CHOICES = (
 )
 
 
+class DoctorTag(models.Model):
+    tag = models.CharField(max_length=255)
+
+
 class UserProfile(models.Model):
     user = models.OneToOneField(
         QMUser, related_name='profile', on_delete=models.CASCADE)
@@ -49,6 +53,8 @@ class UserProfile(models.Model):
     clinic_name = models.CharField(max_length=100, null=True)
     clinic_registeration_no = models.CharField(max_length=100, null=True)
     doctor_registeration_no = models.CharField(max_length=100, null=True)
+    # tags = models.ManyToOneRel(DoctorTag, on_delete=models.PROTECT)
+    tags = models.ManyToManyField(DoctorTag, related_name="doctors")
 
     agreement_file = models.FileField(
         upload_to='customer/agreement/%Y-%m-%d-%H-%M-%S', blank=True, null=True)
@@ -143,10 +149,3 @@ class DateTimeSlot(models.Model):
 
     doctor = models.ForeignKey(
         QMUser, on_delete=models.CASCADE, related_name="datetimeslots")
-
-
-
-# Invoice
-class BillingInvoice(models.Model):
-    billing_date=models.DateTimeField(auto_now_add=True)
-    appointment_date=models.DateField()

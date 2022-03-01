@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { Route, useLocation, Redirect } from "react-router-dom";
-import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from "reactstrap";
+import { Button } from "reactstrap";
 import SmartTable from "../../ui/smart-table";
 import { AvForm, AvInput } from "availity-reactstrap-validation";
 import { setBData } from "../../redux/actions";
@@ -10,9 +10,16 @@ import { postCall, putCall, getCall } from "../../helpers/axiosUtils";
 import { BASE_URL } from "../../helpers/constants";
 import { toast } from "react-toastify";
 import { loginUserSuccess } from "../../redux/actions";
-
-import { Input } from "@mui/material";
-
+import TextField from "@mui/material/TextField";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
+import { Input, Modal } from "@mui/material";
+import { Grid } from "@material-ui/core";
+import AddCircleIcon from "@mui/icons-material/AddCircle";
+import "../../assets/scss/profile.scss";
 /*
  customer name, address, contact no, email, a field to enter prescription, extra note if necessary
 */
@@ -28,6 +35,8 @@ class Profile extends Component {
       invalidFields: {},
       errorValues: {},
       fileDataList: {},
+      open: false,
+      doctor_tags: { tags: [], remaining_tags: [] },
     };
 
     this.props.setBData([
@@ -148,8 +157,47 @@ class Profile extends Component {
     }
   };
 
+  // For Doctor TAG mechanism
+  getTags() {
+    getCall(BASE_URL + "api/doctors_m/doctor_tags")
+      .then((resp) => {
+        if (resp.status === 200) {
+          let data = resp.data.data;
+          this.setState({ doctor_tags: data });
+          console.log(data);
+        }
+      })
+      .catch((err) => {
+        console.log(err.response);
+      });
+  }
+
+  addTag(tag_id) {
+    postCall(BASE_URL + "api/doctors_m/doctor_tags/", {
+      tag_id,
+    }).then((resp) => {
+      let data = resp.data.data;
+      this.setState({ doctor_tags: data });
+    });
+  }
+
+  removeTag(tag_id) {
+    postCall(BASE_URL + "api/doctors_m/doctor_tags/", {
+      tag_id,
+      remove: true,
+    }).then((resp) => {
+      let data = resp.data.data;
+      this.setState({ doctor_tags: data });
+    });
+  }
+
+  componentDidMount() {
+    this.getTags();
+  }
+
   render() {
     const email = this.props.user ? this.props.user.email : "";
+
     return (
       <React.Fragment>
         <div className="row mt-2 p-3">
@@ -412,8 +460,18 @@ class Profile extends Component {
                         />
                       </div>
                     </div>
+                    <div className="col-sm-6"></div>
+                    <div className="col-sm-6">
+                      <Button
+                        size="sm"
+                        className="btn-primary btn-sm"
+                        onClick={() => this.setState({ open: true })}
+                      >
+                        Add Tag
+                      </Button>
+                    </div>
 
-                    <div className="row">
+                    <div className="row" style={{ marginTop: "1em" }}>
                       <div className="col-sm-6">
                         <AvInput
                           type="file"
@@ -441,6 +499,79 @@ class Profile extends Component {
               </div>
             </AvForm>
           </div>
+
+          <Dialog
+            open={this.state.open}
+            onClose={() => this.setState({ open: false })}
+          >
+            <DialogContent>
+              <Grid container>
+                {this.state.doctor_tags.tags.map((tag) => {
+                  return (
+                    <div
+                      className="tag"
+                      style={{
+                        background: "white",
+                        color: "grey",
+                        padding: "0.3em",
+                        borderRadius: "1em",
+                        border: "2px solid grey",
+                        fontSize: "0.8em",
+                        fontWeight: "505",
+                        textTransform: "uppercase",
+                        marginLeft: "10px",
+                      }}
+                      onClick={() => {
+                        this.removeTag(tag.id);
+                      }}
+                    >
+                      {tag.tag}
+                    </div>
+                  );
+                })}
+              </Grid>
+              <h6 style={{ marginTop: "1em", fontWeight: "600" }}>Add Tags</h6>
+              <Grid container>
+                {this.state.doctor_tags.remaining_tags.map((tag) => {
+                  return (
+                    // <a
+                    //   className="add-tag"
+                    //   style={{
+                    //     background: "white",
+                    //     color: "grey",
+                    //     padding: "0.3em",
+                    //     borderRadius: "1em",
+                    //     border: "2px solid grey",
+                    //     fontSize: "0.8em",
+                    //     fontWeight: "505",
+                    //     textTransform: "uppercase",
+                    //   }}
+                    //   onClick={() => {
+                    //     console.log(tag.id);
+                    //   }}
+                    // >
+                    //   {tag.tag} <AddCircleIcon color="primary" />
+                    // </a>
+
+                    <a
+                      className="add-tag"
+                      style={{ textDecoration: "none", marginLeft: "10px" }}
+                      onClick={() => {
+                        this.addTag(tag.id);
+                      }}
+                    >
+                      {tag.tag} <AddCircleIcon color="primary" />
+                    </a>
+                  );
+                })}
+              </Grid>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => this.setState({ open: false })}>
+                Close
+              </Button>
+            </DialogActions>
+          </Dialog>
         </div>
       </React.Fragment>
     );

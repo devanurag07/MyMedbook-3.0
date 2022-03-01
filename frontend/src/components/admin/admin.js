@@ -35,6 +35,7 @@ import ScheduleRouter from "./DoctorPanel/Appoitment/Schedules/ScheduleRouter";
 import DayTimeSlots from "./DoctorPanel/Appoitment/Schedules/DayTimeSlots";
 import DateTimeSlots from "./DoctorPanel/Appoitment/Schedules/DateTimeSlots";
 import Billing from "./DoctorPanel/Appoitment/Billing/Billing";
+import SelectDoctor from "./UserPanel/Appoitment/SelectDoctor";
 
 const loading = () => <div></div>;
 class Admin extends Component {
@@ -144,6 +145,13 @@ class Admin extends Component {
           />
 
           <Route exact path="/app/billing/" component={Billing} />
+
+          {/* Appoitment  User */}
+          <Route
+            exact
+            path="/app/appointment/doctors/"
+            component={SelectDoctor}
+          />
         </Switch>
       </React.Fragment>
     );

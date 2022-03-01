@@ -267,6 +267,27 @@ class AdminLayout extends Component {
 
                       <li className="nav-item ms-4">
                         <NavLink
+                          to="/app/appointment/doctors"
+                          className="nav-link ps-1"
+                          activeClassName="active"
+                          aria-expanded="true"
+                        >
+                          <img
+                            src="/img/queue.svg"
+                            className="in-active"
+                            alt="logo"
+                          />
+                          <img
+                            className="active"
+                            src="/img/queue-active.svg"
+                            alt="logo"
+                          />
+                          <span className="ms-2">Doctors</span>
+                        </NavLink>
+                      </li>
+
+                      <li className="nav-item ms-4">
+                        <NavLink
                           to="/app/access"
                           className="nav-link ps-1"
                           activeClassName="active"
