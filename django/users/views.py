@@ -2,6 +2,7 @@ import datetime
 from os import remove, stat, times
 from pstats import Stats
 from re import T
+import re
 from shutil import ReadError
 from django.contrib.auth.decorators import permission_required
 from django.contrib.auth.models import Group
@@ -615,6 +616,58 @@ class UserMViewSet(viewsets.ModelViewSet):
         resp_data = UserSerializerReadOnly(list(doctors), many=True).data
 
         return Response({"data": resp_data}, status=status.HTTP_200_OK)
+
+    # AppoitmentMechanism
+    @action(methods=["get"], detail=True, url_path="get-timeslots-daywise")
+    def getTimeslotsDaywise(self, request, pk=None, *args, **kwargs):
+        user = get_object_or_404(QMUser, pk=pk)
+        day = request.GET.get("day", None)
+
+        if(day == None or day == ""):
+
+            return Response({"msg": "No Day Selected"}, status=status.HTTP_400_BAD_REQUEST)
+
+        timeslots = TimeSlot.objects.filter(doctor=user, day=day.lower())
+
+        timeslosts_data = TimeSlotSerializer(timeslots, many=True).data
+
+        return Response({"timeslots": timeslosts_data}, status=status.HTTP_200_OK)
+
+    @action(methods=['GET'], detail=True, url_path="get-timeslots-datewise")
+    def getTimeslotsDatewise(self, request, pk):
+
+        user = get_object_or_404(QMUser, pk=pk)
+        date = request.GET.get("date", None)
+
+        if(date == None):
+            doctor_dates = DateTimeSlot.objects.filter(
+                doctor=user).order_by("date")
+
+            dates = list([str(date[0])
+                          for date in doctor_dates.values_list("date")])
+
+            uniqueDates = []
+
+            for date in dates:
+                if(date in uniqueDates):
+                    continue
+                uniqueDates.append(date)
+
+            """
+                If Date is not provided it will return just unique dates...
+                Those dates are the key to timeslots
+            """
+
+            return Response({"dates": uniqueDates}, status=status.HTTP_200_OK)
+
+        else:
+            timeslots = DateTimeSlot.objects.filter(
+                date=date, doctor=user).order_by("start_time")
+
+            datetimeslots = DateTimeSlotSerializer(
+                timeslots, many=True).data
+
+            return Response({"timeslots": datetimeslots}, status=status.HTTP_200_OK)
 
 
 class DoctorsMViewSet(viewsets.ModelViewSet):
