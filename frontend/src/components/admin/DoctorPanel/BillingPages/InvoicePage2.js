@@ -41,8 +41,26 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const InvoicePage = ({ medicine_list_, data, doctor_info, callBack }) => {
-  let medicine_list = medicine_list_ ? medicine_list_ : [];
+const InvoicePage = ({
+  medicine_list_,
+  customer_data_,
+  doctor_info,
+  callBack,
+  invoiceData = undefined,
+}) => {
+  let medicine_list = [];
+  let customer_data = {};
+  if (invoiceData !== undefined) {
+    medicine_list = invoiceData.prescription_data.prescription_list;
+    customer_data = invoiceData.customer_data;
+
+    console.log(customer_data);
+    console.log(medicine_list);
+  } else {
+    medicine_list = medicine_list_ ? medicine_list_ : [];
+    customer_data = customer_data_;
+  }
+
   let callbackFunc = callBack ? callBack : () => {};
 
   const options = {
@@ -54,8 +72,12 @@ const InvoicePage = ({ medicine_list_, data, doctor_info, callBack }) => {
 
   const ref = React.createRef();
 
-  const patient_name = data.customer_name ? data.customer_name : "Undefined";
-  const patient_mobile = data.mobile ? data.mobile : "xxxx.xxxx.xx";
+  const patient_name = customer_data.first_name
+    ? customer_data.first_name
+    : "Undefined";
+  const patient_mobile = customer_data.mobile
+    ? customer_data.mobile
+    : "xxxx.xxxx.xx";
 
   let doctorInfo = undefined;
   const currentUser = useSelector((state) => state.Auth.user);
@@ -84,6 +106,7 @@ const InvoicePage = ({ medicine_list_, data, doctor_info, callBack }) => {
     var strTime = hours + ":" + minutes + " " + ampm;
     return strTime;
   };
+
   const printDoc = () => {
     htmlToImage.toBlob(document.getElementById("page")).then(function (blob) {
       // saveAs(blob, "my-node.pdf");
@@ -97,7 +120,7 @@ const InvoicePage = ({ medicine_list_, data, doctor_info, callBack }) => {
       image.onload = (res) => {
         const width = image.width;
         const height = image.height;
-        doc.internal.pageSize.width = 2 * width;
+        doc.internal.pageSize.width = 3 * width;
         doc.internal.pageSize.height = 2 * height;
 
         blob.arrayBuffer().then((resp) => {
@@ -162,7 +185,7 @@ const InvoicePage = ({ medicine_list_, data, doctor_info, callBack }) => {
                   #20, 8th Main, 5th Cross, 7425631 Hanumantha Nagara, Bangalore
                   - 541102.
                 </div> */}
-                <div className="email gray mt-1">{data.username}</div>
+                <div className="email gray mt-1">{customer_data.username}</div>
                 <div className="mobile gray mt-1">{patient_mobile}</div>
               </div>
             </Grid>
@@ -191,11 +214,13 @@ const InvoicePage = ({ medicine_list_, data, doctor_info, callBack }) => {
                 </h3>
                 <div className="invoice-no mt-2">
                   <h6>Invoice No.</h6>
-                  <div className="no gray">7425631</div>
+                  <div className="no gray">{invoiceData.id}</div>
                 </div>
                 <div className="invoice-date mt-2">
                   <h6>Invoice Date.</h6>
-                  <div className="date gray">01-01-2022</div>
+                  <div className="date gray">
+                    {invoiceData.created_at.split("T")[0]}
+                  </div>
                 </div>
               </Grid>
             </Grid>
@@ -239,20 +264,24 @@ const InvoicePage = ({ medicine_list_, data, doctor_info, callBack }) => {
             </Grid>
 
             <Grid item sm={3}>
-              <div style={{ textAlign: "end", fontSize: "1rem" }}>Rs. 1500</div>
+              <div style={{ textAlign: "end", fontSize: "1rem" }}>
+                {" "}
+                {invoiceData.consultation_charges}
+              </div>
             </Grid>
           </Grid>
 
           {medicine_list.map((medicine) => {
+            const medicine_name = medicine.name
+              ? medicine.name
+              : medicine.medicine_name;
             return (
               <Grid
                 container
                 style={{ borderBottom: "1px solid #d7d7d7", marginTop: "1em" }}
               >
                 <Grid item sm={3}>
-                  <div style={{ fontSize: "1rem" }}>
-                    {medicine.medicine_name}
-                  </div>
+                  <div style={{ fontSize: "1rem" }}>{medicine_name}</div>
                 </Grid>
                 <Grid item sm={3}>
                   <div style={{ textAlign: "center", fontSize: "1rem" }}>
@@ -281,7 +310,7 @@ const InvoicePage = ({ medicine_list_, data, doctor_info, callBack }) => {
                 </Grid>
                 <Grid item xs={3} style={{ borderBottom: "1px solid #d7d7d7" }}>
                   <div className="total gray" style={{ textAlign: "end" }}>
-                    Rs. 1500
+                    {invoiceData.consultation_charges}
                   </div>
                 </Grid>
               </Grid>
@@ -309,7 +338,7 @@ const InvoicePage = ({ medicine_list_, data, doctor_info, callBack }) => {
                 </Grid>
                 <Grid item xs={3}>
                   <div className="total gray" style={{ textAlign: "end" }}>
-                    Rs. 1500
+                    {invoiceData.consultation_charges}
                   </div>
                 </Grid>
               </Grid>

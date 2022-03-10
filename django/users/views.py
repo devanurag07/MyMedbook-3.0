@@ -771,15 +771,15 @@ class DoctorsMViewSet(viewsets.ModelViewSet):
 
         if(already_exists):
 
-            # Development Line
-            BillingInvoice.objects.filter(
-                prescription=latest_presc).delete()
+            # # Development Line
+            # BillingInvoice.objects.filter(
+            #     prescription=latest_presc).delete()
 
-            # return Response({"msg": "Already Created", "status": "error"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"msg": "Already Created", "status": "error"}, status=status.HTTP_400_BAD_REQUEST)
 
         if True:
             billing_invoice = BillingInvoice(prescription=latest_presc,
-                                             consulation_charges=consultationCharges,
+                                             consultation_charges=consultationCharges,
                                              appointment_date=appointmentDate,
                                              customer=customer,
                                              created_by=doctor)
@@ -791,7 +791,18 @@ class DoctorsMViewSet(viewsets.ModelViewSet):
 
             return Response({"msg": "Invoice Created", "data": invoice_data}, status=status.HTTP_201_CREATED)
 
+    @action(methods=["get"], detail=False, url_path="get-invoices")
+    def get_invoices(self, request, *args, **kwargs):
+
+        user = request.user
+        invoices = BillingInvoice.objects.filter(created_by=user)
+
+        invoices_data = BillingInvoiceSerializer(invoices, many=True).data
+
+        return Response({"msg": "Successfully Fetched", "invoices": invoices_data}, status=status.HTTP_200_OK)
+
     # Tags Mechanism
+
     @action(methods=["post", "get"], detail=False, url_path="doctor_tags")
     def doctor_tags(self, request, pk=None, *args, **kwargs):
 

@@ -297,8 +297,14 @@ class BillingInvoiceSerializer(serializers.ModelSerializer):
     customer_phone = serializers.ReadOnlyField(
         source="customer.profile.mobile")
 
+    prescription_data = serializers.SerializerMethodField()
+
     def get_customer_data(self, instance):
         data = UserSerializerReadOnly(instance.customer, many=False).data
+        return data
+
+    def get_prescription_data(self, instance):
+        data = PrescriptionSerializer(instance.prescription, many=False).data
         return data
 
     class Meta:

@@ -448,7 +448,7 @@ class AdminLayout extends Component {
                                                 </div> */}
                         <div className="app-utility-item me-0">
                           <NavLink
-                            className="btn btn-light ms-2 d-none d-md-block text-primary"
+                            className="btn btn-light ms-2 d-none d-md-block text-primary top-nav-link"
                             to="/app/membership"
                           >
                             Membership
@@ -456,7 +456,7 @@ class AdminLayout extends Component {
                         </div>
                         <div className="app-utility-item me-0">
                           <NavLink
-                            className="btn btn-light ms-2 d-none d-md-block text-primary"
+                            className="btn btn-light ms-2 d-none d-md-block text-primary top-nav-link"
                             to="/app/profile"
                           >
                             Profile
@@ -465,13 +465,14 @@ class AdminLayout extends Component {
                         <div className="app-utility-item">
                           <NavLink
                             to="/logout"
-                            className="btn btn-light ms-2 d-none d-md-block text-primary"
+                            className="btn btn-light ms-2 d-none d-md-block text-primary top-nav-link"
                           >
                             Logout
                             <img
                               className="logout ms-1"
                               src="/img/logout.svg"
                               alt="logo"
+                              style={{ width: "20px" }}
                             />
                           </NavLink>
                         </div>

@@ -45,12 +45,12 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   infoTitle: {
-    [theme.breakpoints.down("xs")]: {
-      fontSize: "0.9em",
-      fontWeight: "600",
-      fontFamily: "POPPINS",
-      color: "#5a5a5a !important",
-    },
+    // [theme.breakpoints.down("xs")]: {
+    //   fontSize: "0.9em",
+    //   fontWeight: "600",
+    //   fontFamily: "POPPINS",
+    //   color: "#5a5a5a !important",
+    // },
   },
 }));
 
@@ -206,21 +206,21 @@ const PatientPrescDetail = (props) => {
               }
             /> */}
 
-            {/* <PrescriptionPage
-              medicine_list_={getMedicinesList()}
-              data={queueData}
-              doctor_info={
-                queueData.doctor_info ? queueData.doctor_info : undefined
-              }
-            /> */}
-
-            <InvoicePage
+            <PrescriptionPage
               medicine_list_={getMedicinesList()}
               data={queueData}
               doctor_info={
                 queueData.doctor_info ? queueData.doctor_info : undefined
               }
             />
+
+            {/* <InvoicePage
+              medicine_list_={getMedicinesList()}
+              customer_data_={queueData}
+              doctor_info={
+                queueData.doctor_info ? queueData.doctor_info : undefined
+              }
+            /> */}
           </ModalBody>
           <ModalFooter>
             <Button color="secondary" onClick={tooglePrintPdf} size="sm">

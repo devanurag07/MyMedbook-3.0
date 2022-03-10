@@ -208,3 +208,13 @@
     color: rgb(20, 20, 20) !important;
   }
 }
+
+// Previous Month cARD
+
+.previous-month-card {
+  .avatar-container {
+    display: flex;
+    justify-content: end;
+    align-items: center;
+  }
+}

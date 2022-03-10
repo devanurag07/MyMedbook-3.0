@@ -56,7 +56,7 @@ class BillingInvoice(models.Model):
     prescription = models.OneToOneField(Prescription, on_delete=models.CASCADE)
     customer = models.ForeignKey(
         QMUser, on_delete=models.CASCADE, related_name="myinvoices")
-    consulation_charges = models.IntegerField(default=0)
+    consultation_charges = models.IntegerField(default=0)
     created_by = models.ForeignKey(
         QMUser, on_delete=models.CASCADE, related_name="customer_invoices")
     created_at = models.DateTimeField(auto_now_add=True)

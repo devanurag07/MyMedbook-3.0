@@ -257,8 +257,7 @@ class Dashboard extends Component {
           },
           chart: {
             type: "area",
-            height: "280px",
-            // width: "200px",
+            height: "180cd dpx",
           },
           xAxis: {
             categories: responseData.day_choices,
@@ -836,8 +835,8 @@ class Dashboard extends Component {
               </React.Fragment>
             )}
 
-            <div className="row mt-3 d-card">
-              <div className="col-12">
+            <div className="row mt-3 d-card" style={{ margin: "1em" }}>
+              <div className="col-12" style={{ padding: 0 }}>
                 {!this.props.user.document_verified && (
                   <React.Fragment>
                     {!this.props.user.agreement_file && (
@@ -902,15 +901,20 @@ class Dashboard extends Component {
                         justifyContent: "space-between",
                       }}
                     >
-                      <div className="col-6">
-                        <HighchartsReact
-                          highcharts={Highcharts}
-                          options={this.state.chartOptions}
-                        />
+                      <div className="col-8">
+                        <Paper elevation={2} style={{ padding: "1em" }}>
+                          <h5>Statistics</h5>
+
+                          <HighchartsReact
+                            highcharts={Highcharts}
+                            options={this.state.chartOptions}
+                          />
+                        </Paper>
                       </div>
+
                       <div className="col-4">
                         <div className="row">
-                          <div className="col-12 max-w">
+                          <div className="col-12 ">
                             <h5 className="previous">Previous Months</h5>
                             <div className="card previous-month-card">
                               <div className="card-body">
@@ -941,7 +945,7 @@ class Dashboard extends Component {
                                       </h3>
                                     </div>
                                   </div>
-                                  <div className="col-6">
+                                  <div className="col-6 avatar-container">
                                     <div className="avatar-lg rounded-circle cbg-light">
                                       <img
                                         className="icon-circle avatar-title"
@@ -956,7 +960,7 @@ class Dashboard extends Component {
                             </div>
                           </div>
 
-                          <div className="col-12 max-w mt-2">
+                          <div className="col-12  mt-2">
                             <div className="card previous-month-card">
                               <div className="card-body">
                                 <div className="row">
@@ -986,7 +990,7 @@ class Dashboard extends Component {
                                       </h3>
                                     </div>
                                   </div>
-                                  <div className="col-6">
+                                  <div className="col-6 avatar-container">
                                     <div className="avatar-lg rounded-circle cbg-light">
                                       <img
                                         className="icon-circle avatar-title"
